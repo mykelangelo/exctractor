@@ -27,7 +27,8 @@ public class PersonExtractorService {
     }
 
     private Person extractPerson(String row) {
-        String trimmed = row.substring(1, row.length() - 1);
+        String stripped = row.strip();
+        String trimmed = stripped.substring(1, stripped.length() - 1);
         String[] columns = trimmed.split(SEPARATOR_PATTERN);
 
         return new Person(columns[0], columns[1], normalizeAddress(columns[2], columns[3], columns[4]), Integer.valueOf(columns[5]));
