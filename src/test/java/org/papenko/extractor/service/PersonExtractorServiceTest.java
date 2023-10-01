@@ -6,8 +6,8 @@ import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
 import org.mockito.Spy;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.papenko.extractor.entity.FullAddress;
-import org.papenko.extractor.entity.Person;
+import org.papenko.extractor.dto.FullAddress;
+import org.papenko.extractor.dto.Person;
 
 import java.util.ArrayList;
 import java.util.List;

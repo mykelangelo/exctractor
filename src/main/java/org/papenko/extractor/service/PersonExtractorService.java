@@ -1,7 +1,7 @@
 package org.papenko.extractor.service;
 
-import org.papenko.extractor.entity.FullAddress;
-import org.papenko.extractor.entity.Person;
+import org.papenko.extractor.dto.FullAddress;
+import org.papenko.extractor.dto.Person;
 import org.springframework.stereotype.Service;
 
 import java.util.List;

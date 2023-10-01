@@ -1,11 +1,9 @@
 package org.papenko.extractor.controller;
 
-import org.papenko.extractor.entity.Person;
+import org.papenko.extractor.constant.OutputFormat;
+import org.papenko.extractor.dto.Person;
 import org.papenko.extractor.exception.CsvValidationException;
-import org.papenko.extractor.service.FileReaderService;
-import org.papenko.extractor.service.HouseholdInfoExtractorService;
-import org.papenko.extractor.service.PersonExtractorService;
-import org.papenko.extractor.service.ValidatorService;
+import org.papenko.extractor.service.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.ResponseEntity;
@@ -23,20 +21,25 @@ import java.util.List;
 public class ExtractorController {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(ExtractorController.class);
-    private final HouseholdInfoExtractorService householdInfoExtractorService;
+    private final PlainHouseholdInfoExtractorService plainHouseholdInfoExtractorService;
     private final PersonExtractorService personExtractorService;
     private final FileReaderService fileReaderService;
     private final ValidatorService validatorService;
+    private final DtoHouseholdInfoExtractorService dtoHouseholdInfoExtractorService;
+    private final CsvHouseholdInfoExtractorService csvHouseholdInfoExtractorService;
 
-    public ExtractorController(HouseholdInfoExtractorService householdInfoExtractorService, PersonExtractorService personExtractorService, FileReaderService fileReaderService, ValidatorService validatorService) {
-        this.householdInfoExtractorService = householdInfoExtractorService;
+    public ExtractorController(PlainHouseholdInfoExtractorService plainHouseholdInfoExtractorService, PersonExtractorService personExtractorService, FileReaderService fileReaderService, ValidatorService validatorService, DtoHouseholdInfoExtractorService dtoHouseholdInfoExtractorService, CsvHouseholdInfoExtractorService csvHouseholdInfoExtractorService) {
+        this.plainHouseholdInfoExtractorService = plainHouseholdInfoExtractorService;
         this.personExtractorService = personExtractorService;
         this.fileReaderService = fileReaderService;
         this.validatorService = validatorService;
+        this.dtoHouseholdInfoExtractorService = dtoHouseholdInfoExtractorService;
+        this.csvHouseholdInfoExtractorService = csvHouseholdInfoExtractorService;
     }
 
     @PostMapping("file")
-    public ResponseEntity<String> extractFromFile(@RequestParam MultipartFile file) {
+    public ResponseEntity<Object> extractFromFile(@RequestParam MultipartFile file,
+                                                  @RequestParam(defaultValue = "PLAIN") OutputFormat outputFormat) {
         String lines;
         try {
             lines = fileReaderService.readLines(file);
@@ -51,7 +54,12 @@ public class ExtractorController {
             return ResponseEntity.badRequest().body("CsvValidationException: " + e.getMessage());
         }
         List<Person> rows = personExtractorService.extractRows(lines);
-        String result = householdInfoExtractorService.prepareResult(rows);
-        return ResponseEntity.ok(result);
+        HouseholdInfoExtractorService<?> householdInfoExtractorService = switch (outputFormat) {
+            case PLAIN -> plainHouseholdInfoExtractorService;
+            case CSV -> csvHouseholdInfoExtractorService;
+            case JSON -> dtoHouseholdInfoExtractorService;
+        };
+        Object households = householdInfoExtractorService.prepareResult(rows);
+        return ResponseEntity.ok(households);
     }
 }
