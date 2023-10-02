@@ -41,6 +41,7 @@ class ExtractorControllerIntegrationTest {
 
     static Stream<Arguments> filenamesAndMessagesProvider() {
         return Stream.of(
+                Arguments.of("blanks.txt", Messages.SOME_FIELDS_ARE_BLANK),
                 Arguments.of("no-quotes.txt", Messages.NOT_SURROUNDED_BY_QUOTES),
                 Arguments.of("not-enough-separators.txt", Messages.NOT_CONTAINING_CORRECT_NUMBER_OF_SEPARATORS)
         );
@@ -48,7 +49,7 @@ class ExtractorControllerIntegrationTest {
 
     @ParameterizedTest
     @MethodSource("formatsAndOutputProvider")
-    void extractFromFile_shouldReturnCorrectOutput_whenFileContentsAreValid(String format, String output) throws Exception {
+    void extractFromFile_shouldReturnCorrectOutput_whenFileContentsAreValid(OutputFormat format, String output) throws Exception {
         MvcResult mvcResult = mockMvc.perform(multipart("/extract/file?outputFormat=%s".formatted(format))
                         .file("file", readBytesFromFile("%s%s".formatted(RESOURCES, "valid-input.txt"))))
                 .andExpect(status().isOk())
@@ -59,9 +60,9 @@ class ExtractorControllerIntegrationTest {
 
     static Stream<Arguments> formatsAndOutputProvider() {
         return Stream.of(
-                Arguments.of(OutputFormat.JSON.toString(), """
+                Arguments.of(OutputFormat.JSON, """
                         [{"occupantsNumber":1,"address":{"address":"234 2ND AVE","city":"TACOMA","state":"FL"},"adults":[{"firstName":"Frank","lastName":"Jones","fullAddress":{"address":"234 2ND AVE","city":"TACOMA","state":"FL"},"age":23}]},{"occupantsNumber":2,"address":{"address":"234 2ND AVE","city":"TACOMA","state":"WA"},"adults":[{"firstName":"Eve","lastName":"Smith","fullAddress":{"address":"234 2ND AVE","city":"TACOMA","state":"WA"},"age":25},{"firstName":"Bob","lastName":"Williams","fullAddress":{"address":"234 2ND AVE","city":"TACOMA","state":"WA"},"age":26}]},{"occupantsNumber":1,"address":{"address":"234 2ND AVE","city":"SEATTLE","state":"WA"},"adults":[{"firstName":"Carol","lastName":"Johnson","fullAddress":{"address":"234 2ND AVE","city":"SEATTLE","state":"WA"},"age":67}]},{"occupantsNumber":2,"address":{"address":"345 3RD BLVD APT 200","city":"SEATTLE","state":"WA"},"adults":[{"firstName":"George","lastName":"Brown","fullAddress":{"address":"345 3RD BLVD APT 200","city":"SEATTLE","state":"WA"},"age":18},{"firstName":"Helen","lastName":"Brown","fullAddress":{"address":"345 3RD BLVD APT 200","city":"SEATTLE","state":"WA"},"age":18}]},{"occupantsNumber":4,"address":{"address":"123 MAIN ST","city":"SEATTLE","state":"WA"},"adults":[{"firstName":"Alice","lastName":"Smith","fullAddress":{"address":"123 MAIN ST","city":"SEATTLE","state":"WA"},"age":45},{"firstName":"Dave","lastName":"Smith","fullAddress":{"address":"123 MAIN ST","city":"SEATTLE","state":"WA"},"age":43},{"firstName":"Ian","lastName":"Smith","fullAddress":{"address":"123 MAIN ST","city":"SEATTLE","state":"WA"},"age":18}]}]"""),
-                Arguments.of(OutputFormat.PLAIN.toString(), """
+                Arguments.of(OutputFormat.PLAIN, """
                         1 people live in household @ 234 2ND AVE, TACOMA, FL
                         Adults:
                         Frank Jones, age 23
@@ -85,7 +86,7 @@ class ExtractorControllerIntegrationTest {
                         Alice Smith, age 45
                         Dave Smith, age 43
                         Ian Smith, age 18"""),
-                Arguments.of(OutputFormat.CSV.toString(), """
+                Arguments.of(OutputFormat.CSV, """
                         1, 234 2ND AVE, TACOMA, FL
                         Frank, Jones, 23
 
