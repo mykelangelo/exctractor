@@ -9,16 +9,15 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.web.servlet.MockMvc;
-import org.springframework.test.web.servlet.MvcResult;
 
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.stream.Stream;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.hamcrest.Matchers.containsString;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.multipart;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @SpringBootTest
@@ -31,12 +30,10 @@ class ExtractorControllerIntegrationTest {
     @ParameterizedTest
     @MethodSource("filenamesAndMessagesProvider")
     void extractFromFile_shouldReturnCorrectErrorMessage_whenFileContentsAreMalformed(String filename, String message) throws Exception {
-        MvcResult mvcResult = mockMvc.perform(multipart("/extract/file")
+        mockMvc.perform(multipart("/extract/file")
                         .file("file", readBytesFromFile("%s%s".formatted(RESOURCES, filename))))
                 .andExpect(status().isBadRequest())
-                .andReturn();
-
-        assertTrue(mvcResult.getResponse().getContentAsString().contains(message));
+                .andExpect(content().string(containsString(message)));
     }
 
     static Stream<Arguments> filenamesAndMessagesProvider() {
@@ -50,12 +47,10 @@ class ExtractorControllerIntegrationTest {
     @ParameterizedTest
     @MethodSource("formatsAndOutputProvider")
     void extractFromFile_shouldReturnCorrectOutput_whenFileContentsAreValid(OutputFormat format, String output) throws Exception {
-        MvcResult mvcResult = mockMvc.perform(multipart("/extract/file?outputFormat=%s".formatted(format))
+        mockMvc.perform(multipart("/extract/file?outputFormat=%s".formatted(format))
                         .file("file", readBytesFromFile("%s%s".formatted(RESOURCES, "valid-input.txt"))))
                 .andExpect(status().isOk())
-                .andReturn();
-
-        assertEquals(output, mvcResult.getResponse().getContentAsString());
+                .andExpect(content().string(output));
     }
 
     static Stream<Arguments> formatsAndOutputProvider() {
