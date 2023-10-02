@@ -11,7 +11,7 @@ import java.util.Map;
 import java.util.stream.Collectors;
 
 @Service
-public class DtoHouseholdInfoExtractorService implements HouseholdInfoExtractorService<List<HouseholdInfo>>{
+public class DtoHouseholdInfoExtractorService implements HouseholdInfoExtractorService<List<HouseholdInfo>> {
     /**
      * @param people input data in {@link Person} records
      * @return List of {@link HouseholdInfo} sorted by Last Name then First Name where the occupant(s) is 18 or older

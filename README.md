@@ -21,3 +21,6 @@ so here "CSV format" is divided into blocks by households:
 # To download result as a file:
 - in Postman use "Save response to file" option
 - in curl use -o flag followed by filename
+
+# Test coverage: 96% of all lines of code
+(integration and unit tests cover all business logic)
