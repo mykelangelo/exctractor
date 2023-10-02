@@ -8,6 +8,9 @@ import org.springframework.stereotype.Service;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import static org.papenko.extractor.constant.Csv.INVALID_ADDRESS_SYMBOLS_PATTERN;
+import static org.papenko.extractor.constant.Csv.SEPARATOR_PATTERN;
+
 @Service
 public class ValidatorService {
     /**
@@ -28,6 +31,13 @@ public class ValidatorService {
             }
             if (countCsvSeparators(stripped) != Csv.VALID_SEPARATORS_COUNT) {
                 throw new CsvValidationException(Messages.NOT_CONTAINING_CORRECT_NUMBER_OF_SEPARATORS);
+            }
+            String trimmed = stripped.substring(1, stripped.length() - 1);
+            String[] columns = trimmed.split(SEPARATOR_PATTERN);
+            for (String column : columns) {
+                if (column.replaceAll(INVALID_ADDRESS_SYMBOLS_PATTERN, "").isBlank()) {
+                    throw new CsvValidationException(Messages.SOME_FIELDS_ARE_BLANK);
+                }
             }
         }
     }
